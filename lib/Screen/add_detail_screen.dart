@@ -5,7 +5,9 @@ import 'package:todo_app/model/note_model.dart';
 import '../common-widgets/database-helper.dart';
 
 class AddDetailScreen extends StatefulWidget {
-  AddDetailScreen({super.key});
+  AddDetailScreen({super.key, this.noteList});
+
+  NoteModel? noteList;
 
   @override
   State<AddDetailScreen> createState() => _AddDetailScreenState();
@@ -18,11 +20,15 @@ class _AddDetailScreenState extends State<AddDetailScreen> {
   NoteModel noteModel = NoteModel();
   final dbHelper = DatabaseHelper();
 
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    if (widget.noteList != null) {
+      nameController.text = widget.noteList!.name.toString();
+      ageController.text = widget.noteList!.age.toString();
+      bloodController.text = widget.noteList!.bloadGroup.toString();
+    }
   }
 
   @override
@@ -64,9 +70,18 @@ class _AddDetailScreenState extends State<AddDetailScreen> {
                       noteModel.name = nameController.text.toString();
                       noteModel.age = int.parse(ageController.text.toString());
                       noteModel.bloadGroup = bloodController.text.toString();
-                      dbHelper.insert(noteModel, context);
+
+                      if (widget.noteList == null) {
+                        dbHelper.insert(noteModel, context);
+                      } else {
+                        noteModel.id = widget.noteList!.id;
+                        print("kjkjn");
+                        dbHelper.updateNote(noteModel, context);
+                      }
                     },
-                    child: Text("Submit"),
+                    child: widget.noteList == null
+                        ? Text("Submit")
+                        : Text("Update"),
                   ))
             ],
           ),
