@@ -53,6 +53,17 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<int> updateNote(NoteModel note, BuildContext context) async {
+    var db = await this.data;
+    var result = await db.update(noteTable, note.toMap(),
+        where: '$colId = ?', whereArgs: [note.id]);
+    if (db != null) {
+      Navigator.pop(context);
+    }
+    print(result);
+    return result;
+  }
+
   Future<List<Map<String, dynamic>>> getMapList() async {
     Database db = await data;
     var result = await db.query(noteTable);
@@ -68,5 +79,12 @@ class DatabaseHelper {
       note.add(NoteModel.fromMapObject(noteModelList[i]));
     }
     return note;
+  }
+
+  Future<int> deleteNote(NoteModel note) async {
+    Database db = await data;
+    var result =
+        await db.delete(noteTable, where: '$colId = ?', whereArgs: [note.id]);
+    return result;
   }
 }

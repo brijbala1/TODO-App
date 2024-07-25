@@ -41,21 +41,57 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
       ),
       body: CustonContainer(
-          child: count == 0
-              ? Text(
-                  "No Data Add ",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                )
-              : ListView.builder(
-                  itemCount: count,
-                  itemBuilder: (context, index) => getCard(
-                        noteList![index].name.toString(),
-                        noteList![index].age,
-                        noteList![index].bloadGroup,
-                      ))),
+        child: count == 0
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.search,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      "NO RECORD FOUND",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: count,
+                itemBuilder: (context, index) => InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddDetailScreen(
+                                noteList: noteList![index]))).then((val) {
+                      Future<List<NoteModel>> noteListFuture =
+                          dbHelper.getNoteList();
+                      noteListFuture.then((noteList) {
+                        setState(() {
+                          this.noteList = noteList;
+                          this.count = noteList.length;
+                        });
+                      });
+                    });
+                  },
+                  child: getCard(
+                      noteList![index].name.toString(),
+                      noteList![index].age,
+                      noteList![index].bloadGroup,
+                      noteList![index]),
+                ),
+              ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xffFF6B38),
+        backgroundColor: Colors.white,
         onPressed: () {
           Navigator.push(context,
                   MaterialPageRoute(builder: (context) => AddDetailScreen()))
@@ -71,30 +107,53 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: Icon(
           Icons.add,
-          color: Colors.white,
+          color: Colors.orange.shade900,
         ),
       ),
     );
   }
 
-  getCard(String title, subtitle, trailing) {
+  getCard(String title, subtitle, trailing, NoteModel noteModel) {
     return Card(
-      color: Colors.deepOrange.shade100,
+      margin: EdgeInsets.only(left: 10, right: 10),
+      color: Colors.white24,
+      shadowColor: Colors.white24,
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Color(0xffFF1883),
-          child: Text(
-            title[0].toUpperCase(),
+          leading: CircleAvatar(
+            backgroundColor: Color(0xffFF1883),
+            child: Text(
+              title[0].toUpperCase(),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          title: Text(
+            title.toUpperCase(),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          subtitle: Text(
+            "Age: ".toUpperCase() +
+                subtitle.toString().toUpperCase() +
+                " years",
             style: TextStyle(color: Colors.white),
           ),
-        ),
-        title: Text(
-          "name: ".toUpperCase() + title.toUpperCase(),
-        ),
-        subtitle: Text(
-            "Age: ".toUpperCase() + subtitle.toString().toUpperCase()),
-        trailing: Text(trailing.toString().toUpperCase()),
-      ),
+          trailing: InkWell(
+            onTap: () {
+              dbHelper.deleteNote(noteModel).then((onValue) {
+                Future<List<NoteModel>> noteListFuture = dbHelper.getNoteList();
+                noteListFuture.then((noteList) {
+                  setState(() {
+                    this.noteList = noteList;
+                    this.count = noteList.length;
+                  });
+                });
+              });
+            },
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+          )),
     );
   }
 }
